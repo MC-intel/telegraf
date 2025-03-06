@@ -1,5 +1,7 @@
 package telegraf
 
+import "log"
+
 type Output interface {
 	PluginDescriber
 
@@ -26,4 +28,15 @@ type AggregatingOutput interface {
 	Push() []Metric
 	// Reset signals that the aggregator period is completed.
 	Reset()
+}
+
+// Enhanced Write function to track errors
+func (o *Output) Write(metrics []Metric) error {
+	err := o.Write(metrics)
+	if err != nil {
+		log.Println("Error writing metrics:", err)
+		// Increment error counter
+		metrics[0].AddField("error_count", 1)
+	}
+	return err
 }
